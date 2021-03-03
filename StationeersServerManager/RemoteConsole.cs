@@ -123,16 +123,6 @@ namespace StationeersServerManager
         /// <param name="raw"></param>
         public ServerStatus(string raw)
         {
-            /*
-             * Response: GameVersion : 0.2.2768.13597<br>GameStatus : Running<br>1 Player(s) connected.<br><table><tr><th>display name</th><th>steamId</th><th>score</th><th>playtime</th><th>ping</th>
-             * Smodd
-             * 76561197985145270
-             * 1671
-             * 10:11:19
-             * 28 ms
-             * </tr></table>
-             */
-
             try
             {
                 // split into string lines

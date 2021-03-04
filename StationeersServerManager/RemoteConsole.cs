@@ -20,7 +20,6 @@ namespace StationeersServerManager
         private readonly IPAddress _address;
         private readonly int _port;
         private readonly string _password;
-
         private const string _query = "http://{0}:{1}/console/run?command={2}";
 
         // general
@@ -28,9 +27,15 @@ namespace StationeersServerManager
         private const string err_no_login = "<color=red>Invalid connection. Please login first.</color>";
 
         // login
-        private const string err_invalid_password = "Invalid password";
-        private const string err_invalid_login_parameters = "Invalid command : login command needs 2 parameters";
-        private const string succ_login = "Login succeeded";
+        private const string login_invalid_password = "Invalid password";
+        private const string login_invalid_parameters = "Invalid command : login command needs 2 parameters";
+        private const string login_success = "Login succeeded";
+
+
+        // Notice
+        private const string notice_success = "$Sent \" {NoticeMessege} \".";
+        private const string notice_invalid_parameters = "Invalid command :notice command requires at least 2 parameters";
+
 
         /// <summary>
         /// Contructor / Create new instance of class, connect and Login.
@@ -49,7 +54,7 @@ namespace StationeersServerManager
                 _client = new HTTP();
                 Login();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -62,11 +67,11 @@ namespace StationeersServerManager
         {
             try
             {
-                string response = _client.Get(string.Format(_query, _address.ToString(), _port, HttpUtility.UrlPathEncode("login " + _password)));
+                string response = QueryRcon("login " + _password);
 
                 switch (response)
                 {
-                    case succ_login:
+                    case login_success:
                         {
                             return;
                         }
@@ -74,17 +79,17 @@ namespace StationeersServerManager
                         {
                             throw new InvalidCommandException(err_invalid_command);
                         }
-                    case err_invalid_password:
+                    case login_invalid_password:
                         {
-                            throw new LoginException(err_invalid_password);
+                            throw new RconException(login_invalid_password);
                         }
-                    case err_invalid_login_parameters:
+                    case login_invalid_parameters:
                         {
-                            throw new LoginException(err_invalid_login_parameters);
+                            throw new RconException(login_invalid_parameters);
                         }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -98,15 +103,51 @@ namespace StationeersServerManager
         {
             try
             {
-                string response = _client.Get(string.Format(_query, _address.ToString(), _port, "status"));
+                string response = QueryRcon("status");
 
                 if (response.Equals(err_no_login))
                 {
-                    throw new LoginException(err_no_login);
+                    throw new RconException(err_no_login);
                 }
 
                 // parse status
                 return new ServerStatus(response);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void Notice(string message)
+        {
+            try
+            {
+                string response = _client.Get(string.Format(_query, _address.ToString(), _port, string.Format("notice \"{0}\"", message)));
+
+                switch (response)
+                {
+                    case notice_invalid_parameters:
+                        {
+                            throw new RconException(notice_invalid_parameters);
+                        }
+                    case notice_success:
+                        {
+                            return;
+                        }
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        private string QueryRcon(string command)
+        {
+            try
+            {
+                return _client.Get(string.Format(_query, _address.ToString(), _port, HttpUtility.UrlPathEncode(command)));
             }
             catch (Exception e)
             {
@@ -161,20 +202,20 @@ namespace StationeersServerManager
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
         }
 
-        public string GameVersion { get;}
-        public string GameStatus { get;}
-        public int Players { get;}
+        public string GameVersion { get; }
+        public string GameStatus { get; }
+        public int Players { get; }
 
         /// <summary>
         /// list of all players
         /// </summary>
-        public List<Player> PlayerList { get;}
+        public List<Player> PlayerList { get; }
     }
 
     public class Player
@@ -201,17 +242,17 @@ namespace StationeersServerManager
         }
     }
 
-    public class LoginException : Exception
+    public class RconException : Exception
     {
-        public LoginException()
-        {
-        }
-     
-        public LoginException(string message) : base(message)
+        public RconException()
         {
         }
 
-        public LoginException(string message, Exception innerException) : base(message, innerException)
+        public RconException(string message) : base(message)
+        {
+        }
+
+        public RconException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

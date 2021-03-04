@@ -16,7 +16,7 @@ namespace StationeersServerManager
 {
     class HTTP
     {
-        private HttpClient _client;
+        private readonly HttpClient _client;
 
         /// <summary>
         /// Constructor
@@ -47,7 +47,7 @@ namespace StationeersServerManager
 #endif
                 return response.Result;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -66,7 +66,7 @@ namespace StationeersServerManager
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadAsStringAsync();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
